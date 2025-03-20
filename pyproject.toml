@@ -1,0 +1,24 @@
+[tool.poetry]
+package-mode = false
+name = "fast-api template"
+version = "0.1.0"
+description = "my fast-api template"
+authors = ["xazme"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pydantic-settings = "^2.8.1"
+uvicorn = "^0.34.0"
+sqlalchemy = "^2.0.39"
+fastapi = "^0.115.11"
+pydantic = {extras = ["email"], version = "^2.10.6"}
+dotenv = "^0.9.9"
+asyncio = "^3.4.3"
+asyncpg = "^0.30.0"
+orjson = "^3.10.15"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
