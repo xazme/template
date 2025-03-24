@@ -20,7 +20,7 @@ class AuthService:
         username = form.username
         password = form.password
 
-        user = db.get_by_name(username=username)
+        user = await db.get_by_name(username=username)
 
         checker = Hasher(password=password)
         result = checker.check_password(hashed_password=user.password)
