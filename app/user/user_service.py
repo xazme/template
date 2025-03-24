@@ -1,4 +1,4 @@
-from sqlalchemy import Select, Result, Update, Delete
+from sqlalchemy import Select, Result
 from sqlalchemy.exc import IntegrityError
 from app.user.user_model import User
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -42,7 +42,21 @@ class UserService:
             return None
 
     async def update(self, user_id: int, new_data: dict):
-        pass
+        user = await self.get(id=user_id)
+
+        if user is None:
+            return None
+
+        for key, value in new_data.items():
+            setattr(user, key, value)
+        return True
 
     async def delete(self, user_id: int):
-        pass
+        user = await self.get(id=user_id)
+
+        if user is None:
+            return None
+
+        await self.session.delete(user)
+        await self.session.commit()
+        return True
