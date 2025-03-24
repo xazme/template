@@ -1,11 +1,9 @@
 from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
-from fastapi.responses import ORJSONResponse
-from app.user.router import user_router
-from app.config import settings
-from app.core.database.service import DBService
-from app.core.database.utils import DBUtils
+from app.user import user_router
+from app.core.config import settings
+from app.database.db_service import DBService
 
 
 @asynccontextmanager
@@ -13,12 +11,11 @@ async def lifespan(app: FastAPI):
     await DBService.create_tables()
     yield
     await DBService.drop_tables()  # TODO turn off
-    await DBUtils.dispose()
+    await DBService.dispose()
 
 
 app = FastAPI(
     lifespan=lifespan,
-    default_response_class=ORJSONResponse,
 )
 app.include_router(user_router)
 
