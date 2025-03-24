@@ -41,7 +41,7 @@ class UserService:
             await self.session.rollback()
             return None
 
-    async def update(self, user_id: int, new_data: dict):
+    async def update(self, user_id: int, new_data: dict) -> True | None:
         user = await self.get(id=user_id)
 
         if user is None:
@@ -51,7 +51,7 @@ class UserService:
             setattr(user, key, value)
         return True
 
-    async def delete(self, user_id: int):
+    async def delete(self, user_id: int) -> True | None:
         user = await self.get(id=user_id)
 
         if user is None:

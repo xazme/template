@@ -1,18 +1,21 @@
 import bcrypt
 
 
-def hash_password(password: str):
-    salt = bcrypt.gensalt()
-    return str(
-        bcrypt.hashpw(
-            salt=salt,
-            password=password.encode(),
+class Hasher:
+    def __init__(self, password: str):
+        self.password = password.encode()
+
+    def hash_password(self) -> str:
+        salt = bcrypt.gensalt()
+        return str(
+            bcrypt.hashpw(
+                salt=salt,
+                password=self.password,
+            )
         )
-    )
 
-
-def check_password(password: str, hashed_password: str):
-    return bcrypt.checkpw(
-        password=password.encode(),
-        hashed_password=hash_password.encode(),
-    )
+    def check_password(self, hashed_password: str) -> bool:
+        return bcrypt.checkpw(
+            password=self.password,
+            hashed_password=hashed_password.encode(),
+        )

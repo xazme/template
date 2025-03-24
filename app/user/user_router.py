@@ -1,17 +1,13 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.database.db_service import DBService
 from app.user.user_schema import UserResponce, UserCreate, UserUpdate
 from app.shared import ExceptionRaiser
 from app.user.user_service import UserService
+from app.shared import get_user_db
 
 router = APIRouter(prefix=settings.api.user_prefix, tags=["Users"])
-
-
-def get_user_db(session: AsyncSession = Depends(DBService.get_session)):
-    return UserService(session=session)
 
 
 @router.get("/by-id/")
