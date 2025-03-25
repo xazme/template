@@ -17,6 +17,10 @@ class DataFromEnv:
     APP_HOST: str = os.getenv("APP_HOST")
     APP_PORT: int = int(os.getenv("APP_PORT"))
 
+    PRIV_KEY_PATH: str = os.getenv("PRIVATE_KEY_PATH")
+    PUB_KEY_PATH: str = os.getenv("PUBLIC_KEY_PATH")
+    ALGORYTHM: str = os.getenn("ALGORYTHM")
+
 
 class DataBaseConnection:
     """DataBase data"""
@@ -45,6 +49,10 @@ class RunConfig(BaseModel):
 
     host: str = DataFromEnv.APP_HOST
     port: int = DataFromEnv.APP_PORT
+
+
+class AuthSettings(BaseModel):
+    pass
 
 
 class ApiPrefix(BaseModel):
