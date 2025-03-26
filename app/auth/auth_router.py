@@ -3,7 +3,7 @@ from app.auth.auth_service import AuthService
 from app.user import User
 from app.shared import ExceptionRaiser
 from app.token import TokenShema, get_users_payload
-from app.shared.jwt import JWT
+from app.token.jwt_service import JWT
 from app.core.config import settings
 from app.shared import get_user_db
 from app.user import UserService, UserResponce

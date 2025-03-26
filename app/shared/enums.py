@@ -10,3 +10,8 @@ class Statuses(Enum):
 class Roles(Enum):
     OWNER = "owner"
     WORKER = "worker"
+
+
+class Tokens(Enum):
+    ACCESS = "access"
+    REFRESH = "refresh"
