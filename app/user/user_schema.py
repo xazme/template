@@ -17,3 +17,6 @@ class UserUpdate(UserBase):
 
 class UserResponce(UserBase):
     id: int
+
+    class Config:
+        from_attributes = True

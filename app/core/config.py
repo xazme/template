@@ -19,7 +19,7 @@ class DataFromEnv:
 
     PRIV_KEY_PATH: str = os.getenv("PRIVATE_KEY_PATH")
     PUB_KEY_PATH: str = os.getenv("PUBLIC_KEY_PATH")
-    ALGORYTHM: str = os.getenn("ALGORYTHM")
+    ALGORITHM: str = os.getenv("ALGORITHM")
 
 
 class DataBaseConnection:
@@ -51,8 +51,23 @@ class RunConfig(BaseModel):
     port: int = DataFromEnv.APP_PORT
 
 
-class AuthSettings(BaseModel):
-    pass
+class Auth(BaseModel):
+
+    token_url: str = ""
+    algorithm: str = DataFromEnv.ALGORITHM
+    expire_minutes: int = 10
+
+    @property
+    def private_key(self):
+        with open(DataFromEnv.PRIV_KEY_PATH, "r") as file:
+            private_key = file.read()
+        return private_key
+
+    @property
+    def public_key(self):
+        with open(DataFromEnv.PRIV_KEY_PATH, "r") as file:
+            public_key = file.read()
+        return public_key
 
 
 class ApiPrefix(BaseModel):
@@ -68,6 +83,7 @@ class Settings:
 
     run: RunConfig = RunConfig()
     api: ApiPrefix = ApiPrefix()
+    auth: Auth = Auth()
     db: DataBaseConnection = DataBaseConnection()
 
 

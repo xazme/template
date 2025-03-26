@@ -1,7 +1,7 @@
 from sqlalchemy import Select, Result
 from sqlalchemy.exc import IntegrityError
-from app.user.user_model import User
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.user.user_model import User
 
 
 class UserService:
@@ -41,7 +41,7 @@ class UserService:
             await self.session.rollback()
             return None
 
-    async def update(self, user_id: int, new_data: dict) -> True | None:
+    async def update(self, user_id: int, new_data: dict) -> bool | None:
         user = await self.get(id=user_id)
 
         if user is None:
@@ -51,7 +51,7 @@ class UserService:
             setattr(user, key, value)
         return True
 
-    async def delete(self, user_id: int) -> True | None:
+    async def delete(self, user_id: int) -> bool | None:
         user = await self.get(id=user_id)
 
         if user is None:

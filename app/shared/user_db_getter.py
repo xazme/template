@@ -4,5 +4,5 @@ from app.user.user_service import UserService
 from app.database.db_service import DBService
 
 
-def get_user_db(session: AsyncSession = Depends(DBService.get_session)):
+def get_user_db(session: AsyncSession = Depends(DBService.get_session)) -> UserService:
     return UserService(session=session)

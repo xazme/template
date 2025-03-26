@@ -2,15 +2,15 @@ import bcrypt
 
 
 class Hasher:
-    def __init__(self, password: str):
-        self.password = password.encode()
 
-    def hash_password(self) -> str:
+    @staticmethod
+    def hash_password(password: str) -> str:
         salt = bcrypt.gensalt()
-        return (bcrypt.hashpw(salt=salt, password=self.password)).decode()
+        return (bcrypt.hashpw(salt=salt, password=password.encode())).decode()
 
-    def check_password(self, hashed_password: str) -> bool:
+    @staticmethod
+    def check_password(password: str, hashed_password: str) -> bool:
         return bcrypt.checkpw(
-            password=self.password,
+            password=password.encode(),
             hashed_password=hashed_password.encode(),
         )
