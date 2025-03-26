@@ -17,8 +17,11 @@ class DataFromEnv:
     APP_HOST: str = os.getenv("APP_HOST")
     APP_PORT: int = int(os.getenv("APP_PORT"))
 
-    PRIV_KEY_PATH: str = os.getenv("PRIVATE_KEY_PATH")
-    PUB_KEY_PATH: str = os.getenv("PUBLIC_KEY_PATH")
+    ACCESS_PRIVATE_KEY_PATH: str = os.getenv("ACCESS_PRIVATE_KEY_PATH")
+    ACCESS_PUBLIC_KEY_PATH: str = os.getenv("ACCESS_PUBLIC_KEY_PATH")
+
+    REFRESH_PRIVATE_KEY_PATH: str = os.getenv("REFRESH_PRIVATE_KEY_PATH")
+    REFRESH_PUBLIC_KEY_PATH: str = os.getenv("REFRESH_PUBLIC_KEY_PATH")
     ALGORITHM: str = os.getenv("ALGORITHM")
 
 
@@ -55,17 +58,30 @@ class Auth(BaseModel):
 
     token_url: str = ""
     algorithm: str = DataFromEnv.ALGORITHM
-    expire_minutes: int = 10
+    expire_minutes: int = 15
+    expire_days: int = 7
 
     @property
-    def private_key(self):
-        with open(DataFromEnv.PRIV_KEY_PATH, "r") as file:
+    def access_private_key(self):
+        with open(DataFromEnv.ACCESS_PRIVATE_KEY_PATH, "r") as file:
             private_key = file.read()
         return private_key
 
     @property
-    def public_key(self):
-        with open(DataFromEnv.PRIV_KEY_PATH, "r") as file:
+    def access_public_key(self):
+        with open(DataFromEnv.ACCESS_PUBLIC_KEY_PATH, "r") as file:
+            public_key = file.read()
+        return public_key
+
+    @property
+    def refresh_private_key(self):
+        with open(DataFromEnv.REFRESH_PRIVATE_KEY_PATH, "r") as file:
+            private_key = file.read()
+        return private_key
+
+    @property
+    def refresh_public_key(self):
+        with open(DataFromEnv.REFRESH_PUBLIC_KEY_PATH, "r") as file:
             public_key = file.read()
         return public_key
 

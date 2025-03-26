@@ -1,20 +1,65 @@
-from typing import AsyncGenerator, TYPE_CHECKING
-from fastapi import Depends, Request
+from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.database.db_service import DBService
+from jwt.exceptions import (
+    InvalidSignatureError,
+    ExpiredSignatureError,
+    DecodeError,
+    InvalidAlgorithmError,
+    ImmatureSignatureError,
+    InvalidAudienceError,
+)
 from app.shared.jwt import JWT
+from app.shared.exceptions import ExceptionRaiser
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/sign-in", auto_error=False)
 
 
-class TokenService:
-    def __init__(self, token_url):
-        self.oauth2_scheme = OAuth2PasswordBearer(tokenUrl=token_url)
+def get_users_payload(public_key: str, token: str = Depends(oauth2_scheme)):
 
-    def generate_access_token(
-        self,
-        payload: dict,
-    ) -> str:
-        return JWT.encode(payload=payload)
+    if not token:
+        ExceptionRaiser.raise_exception(
+            status_code=401,
+            detail="Not Authorized. Token is missing",
+        )
+    try:
+        payload = JWT.decode(
+            token=token,
+            public_key=public_key,
+        )
 
-    def generate_refresh_token():
-        pass
+    except ExpiredSignatureError:
+        ExceptionRaiser.raise_exception(
+            status_code=401,
+            detail="Истёкший токен",
+        )
+    except InvalidSignatureError:
+        ExceptionRaiser.raise_exception(
+            status_code=401,
+            detail="Неверная подпись токена",
+        )
+    except DecodeError:
+        ExceptionRaiser.raise_exception(
+            status_code=400,
+            detail="Ошибка декодирования токена",
+        )
+    except InvalidAlgorithmError:
+        ExceptionRaiser.raise_exception(
+            status_code=400,
+            detail="Неверный алгоритм подписи токена",
+        )
+    except ImmatureSignatureError:
+        ExceptionRaiser.raise_exception(
+            status_code=401,
+            detail="Токен ещё не действителен",
+        )
+    except InvalidAudienceError:
+        ExceptionRaiser.raise_exception(
+            status_code=401,
+            detail="Неверная аудитория токена",
+        )
+    except Exception:
+        ExceptionRaiser.raise_exception(
+            status_code=400,
+            detail="Неизвестная ошибка обработки токена",
+        )
+    return payload
