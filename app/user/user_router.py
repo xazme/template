@@ -10,7 +10,7 @@ from app.shared import get_user_db, Hasher
 router = APIRouter(prefix=settings.api.user_prefix, tags=["Users"])
 
 
-@router.get("/all/")
+@router.get("/")
 async def get_all(user_service: UserService = Depends(get_user_db)):
     return await user_service.get_all()
 
