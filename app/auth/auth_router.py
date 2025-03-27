@@ -1,12 +1,24 @@
-from fastapi import APIRouter, Depends, Response
-from app.auth.auth_service import AuthService
-from app.user import User
-from app.shared import ExceptionRaiser
-from app.token import TokenShema, get_users_payload
-from app.token.jwt_service import JWT
+from typing import TYPE_CHECKING, Optional
+
+from fastapi import APIRouter, Depends, Response, Request, HTTPException
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+
 from app.core.config import settings
-from app.shared import get_user_db
-from app.user import UserService, UserResponce
+from app.shared import (
+    ExceptionRaiser,
+    Tokens,
+    get_jwt_service,
+    get_refresh_token,
+    get_access_token,
+    get_user_db,
+    get_user_from_token,
+)
+from app.token import JWTService, TokenShema
+from app.auth.auth_service import AuthService
+from app.user import UserResponce
+
+if TYPE_CHECKING:
+    from app.user import User, UserService, UserResponce
 
 router = APIRouter(tags=["Auth"], prefix="/auth")
 
@@ -17,7 +29,8 @@ router = APIRouter(tags=["Auth"], prefix="/auth")
 )
 async def auth(
     response: Response,
-    user: User = Depends(AuthService.auth),
+    user: "User" = Depends(AuthService.auth),
+    jwt_service: JWTService = Depends(get_jwt_service),
 ) -> TokenShema:
 
     if not user:
@@ -29,19 +42,11 @@ async def auth(
         "email": user.email,
     }
 
-    access_token = JWT.encode(
-        payload=user_data,
-        private_key=settings.auth.access_private_key,
-        expire_minutes=settings.auth.expire_minutes,
-    )
-    refresh_token = JWT.encode(
-        payload=user_data,
-        private_key=settings.auth.refresh_private_key,
-        expire_days=settings.auth.expire_days,
-    )
+    access_token = jwt_service.generate_access_token(data=user_data)
+    refresh_token = jwt_service.generate_refresh_token(data=user_data)
 
     response.set_cookie(
-        key="Refresh",
+        key=str(Tokens.REFRESH),
         value=refresh_token,
         httponly=True,
         secure=True,
@@ -59,25 +64,39 @@ async def auth(
     response_model=UserResponce,
 )
 async def info(
-    user_payload: dict = Depends(
-        get_users_payload(public_key=settings.auth.access_public_key)
-    ),
-    user_service: UserService = Depends(get_user_db),
+    token: str = Depends(get_access_token),
+    jwt_service: "JWTService" = Depends(get_jwt_service),
+    user_db: "UserService" = Depends(get_user_db),
 ):
-    user_id = user_payload.get("id")
-    user: User = await user_service.get(id=user_id)
+    user = await get_user_from_token(
+        token=token,
+        type=Tokens.ACCESS,
+        jwt_service=jwt_service,
+        user_db=user_db,
+    )
+    if not user:
+        ExceptionRaiser.raise_exception(status_code=404)
     return UserResponce.model_validate(user)
 
 
-@router.post("/refresh", response_model=TokenShema)
+@router.post(
+    "/refresh",
+    response_model=TokenShema,
+    response_model_exclude_unset=True,
+)
 async def get_new_access(
-    user_service: UserService = Depends(get_user_db),
-    user_payload: dict = Depends(
-        get_users_payload(public_key=settings.auth.refresh_public_key)
-    ),
+    token: str = Depends(get_refresh_token),
+    jwt_service: "JWTService" = Depends(get_jwt_service),
+    user_db: "UserService" = Depends(get_user_db),
 ):
-    user_id = user_payload.get("id")
-    user: User = await user_service.get(id=user_id)
+    user = await get_user_from_token(
+        token=token,
+        type=Tokens.ACCESS,
+        jwt_service=jwt_service,
+        user_db=user_db,
+    )
+    if not user:
+        ExceptionRaiser.raise_exception(status_code=404)
 
     user_data = {
         "id": user.id,
@@ -85,12 +104,6 @@ async def get_new_access(
         "email": user.email,
     }
 
-    access_token = JWT.encode(
-        payload=user_data,
-        private_key=settings.auth.access_private_key,
-        expire_minutes=settings.auth.expire_minutes,
-    )
+    access_token = jwt_service.generate_access_token(data=user_data)
 
-    token_data = TokenShema(access_token=access_token)
-
-    return token_data.dict(exclude_unset=True)
+    return TokenShema(access_token=access_token)

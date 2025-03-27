@@ -1,6 +1,8 @@
 import jwt
 from typing import NewType
 from datetime import datetime, timedelta
+from fastapi import Request
+from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import (
     InvalidSignatureError,
     ExpiredSignatureError,
@@ -15,8 +17,8 @@ AccessToken = NewType("AccessToken", str)
 RefreshToken = NewType("RefreshToken", str)
 
 
-class JWTManager:
-    """JWT TOKEN MANAGER"""
+class JWTService:
+    """TOKEN SERVICE"""
 
     def __init__(
         self,
