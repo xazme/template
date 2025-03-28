@@ -14,11 +14,12 @@ from app.shared import (
     get_user_from_token,
 )
 from app.token import JWTService, TokenShema
-from app.auth.auth_service import AuthService
+from app.auth import AuthService, PasswordCheker, UserRepository, UserDB
 from app.user import UserResponce
 
 if TYPE_CHECKING:
     from app.user import User, UserService, UserResponce
+
 
 router = APIRouter(tags=["Auth"], prefix="/auth")
 
@@ -29,12 +30,26 @@ router = APIRouter(tags=["Auth"], prefix="/auth")
 )
 async def auth(
     response: Response,
-    user: "User" = Depends(AuthService.auth),
+    user_data: OAuth2PasswordRequestForm = Depends(),
+    user_db: "UserService" = Depends(get_user_db),
     jwt_service: JWTService = Depends(get_jwt_service),
 ) -> TokenShema:
 
+    user = await user_db.get_by_name(username=user_data.username)
+    user.password
+
+    user_repo = UserRepository(username=user_data.username, password=user_data.password)
+    password_check = PasswordCheker()
+
+    auth_service = AuthService(
+        user_repo=user_repo,
+        password_checker=password_check,
+    )
+
+    user = await auth_service.authentificate()
+
     if not user:
-        ExceptionRaiser.raise_exception(status_code=404)
+        ExceptionRaiser.raise_exception(status_code=401, detail="aa")
 
     user_data = {
         "id": user.id,

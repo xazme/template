@@ -8,6 +8,7 @@ from app.token import JWTService
 from app.core.config import settings
 from app.shared import Tokens
 
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=settings.auth.access_token_url)
 
 
@@ -15,6 +16,10 @@ def get_user_db(
     session: AsyncSession = Depends(DBService.get_session),
 ) -> UserService:
     return UserService(session=session)
+
+
+def get_auth_service():
+    pass
 
 
 def get_jwt_service() -> JWTService:
