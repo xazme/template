@@ -1,15 +1,15 @@
 import bcrypt
 
 
-class PasswordCheker:
-    def __init__(self):
-        pass
+class HashHelper:
 
-    def hash_password(self, password: str) -> str:
+    @staticmethod
+    def hash_password(password: str) -> str:
         salt = bcrypt.gensalt()
         return (bcrypt.hashpw(salt=salt, password=password.encode())).decode()
 
-    def check_password(self, password: str, hashed_password: str) -> bool:
+    @staticmethod
+    def check_password(password: str, hashed_password: str) -> bool:
         return bcrypt.checkpw(
             password=password.encode(), hashed_password=hashed_password.encode()
         )

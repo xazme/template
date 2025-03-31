@@ -7,7 +7,7 @@ from app.token import Tokens
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=settings.auth.access_token_url)
 
 
-def get_jwt_service() -> TokenService:
+def get_token_service() -> TokenService:
     return TokenService(
         alogrithm=settings.auth.algorithm,
         expire_days=settings.auth.expire_days,

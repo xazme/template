@@ -1,5 +1,4 @@
 import jwt
-from typing import Dict
 from datetime import datetime, timedelta
 from jwt.exceptions import (
     InvalidSignatureError,
@@ -35,7 +34,7 @@ class TokenService:
         self.access_private_key = access_private_key
         self.refresh_private_key = refresh_private_key
 
-    def generate_access_token(self, data: Dict) -> AccessToken:
+    def generate_access_token(self, data: dict) -> AccessToken:
         token = self.__encode(
             data=data,
             algorithm=self.alogrithm,
@@ -44,7 +43,7 @@ class TokenService:
         )
         return AccessToken(token)
 
-    def generate_refresh_token(self, data: Dict) -> RefreshToken:
+    def generate_refresh_token(self, data: dict) -> RefreshToken:
         token = self.__encode(
             data=data,
             algorithm=self.alogrithm,
