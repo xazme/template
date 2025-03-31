@@ -1,8 +1,6 @@
 import jwt
-from typing import NewType
+from typing import Dict
 from datetime import datetime, timedelta
-from fastapi import Request
-from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import (
     InvalidSignatureError,
     ExpiredSignatureError,
@@ -11,13 +9,12 @@ from jwt.exceptions import (
     ImmatureSignatureError,
     InvalidAudienceError,
 )
-from app.shared import Tokens, ExceptionRaiser
+from app.shared import ExceptionRaiser
+from .token_enum import Tokens
+from .token_types import AccessToken, RefreshToken
 
-AccessToken = NewType("AccessToken", str)
-RefreshToken = NewType("RefreshToken", str)
 
-
-class JWTService:
+class TokenService:
     """TOKEN SERVICE"""
 
     def __init__(
@@ -38,7 +35,7 @@ class JWTService:
         self.access_private_key = access_private_key
         self.refresh_private_key = refresh_private_key
 
-    def generate_access_token(self, data: dict) -> AccessToken:
+    def generate_access_token(self, data: Dict) -> AccessToken:
         token = self.__encode(
             data=data,
             algorithm=self.alogrithm,
@@ -47,7 +44,7 @@ class JWTService:
         )
         return AccessToken(token)
 
-    def generate_refresh_token(self, data: dict) -> RefreshToken:
+    def generate_refresh_token(self, data: Dict) -> RefreshToken:
         token = self.__encode(
             data=data,
             algorithm=self.alogrithm,

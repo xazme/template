@@ -3,8 +3,8 @@ from fastapi import APIRouter, Depends, Path, Query
 from app.core.config import settings
 from app.user.user_schema import UserResponce, UserCreate, UserUpdate
 from app.shared import ExceptionRaiser
-from app.user.user_service import UserService
-from app.shared import get_user_db, Hasher
+from .user_service import UserService
+from .user_dependencies import get_user_db
 
 
 router = APIRouter(prefix=settings.api.user_prefix, tags=["Users"])
@@ -31,9 +31,8 @@ async def create_user(
     user_data: UserCreate,
     user_service: UserService = Depends(get_user_db),
 ):
-    hashed_user_data = user_data.copy()
-    hashed_user_data.password = Hasher.hash_password(user_data.password)
-    user = await user_service.create(hashed_user_data.dict())
+    # TODO: ХЕЩИРОВАТЬ ПАРОЛЬ
+    user = await user_service.create(user_data.dict())
     if not user:
         ExceptionRaiser.raise_exception(status_code=400)
     return UserResponce.model_validate(user)
