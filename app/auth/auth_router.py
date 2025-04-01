@@ -1,31 +1,28 @@
 from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends
 
-from app.user import UserResponce, get_user_service
+from app.user import UserResponce
 from app.token import (
     TokenShema,
-    Tokens,
     get_token_service,
-    get_access_token,
-    get_refresh_token,
 )
-from app.shared import Roles, ExceptionRaiser
-from .auth_dependencies import authentificate_user
-from .auth_helper import authorize_user
+from app.shared import Roles
+from .auth_dependencies import (
+    authentificate_user,
+    user_from_refresh_token,
+)
+from .auth_helper import requied_roles
 
 if TYPE_CHECKING:
     from app.token import TokenService, TokenShema
-    from app.user import User, UserService, UserResponce
+    from app.user import User, UserResponce
 
 
 router = APIRouter(tags=["Auth"], prefix="/auth")
 
 
-@router.post(
-    "/sign-in",
-    response_model=TokenShema,
-)
+@router.post("/sign-in")
 async def auth(
     user: "User" = Depends(authentificate_user),
     token_service: "TokenService" = Depends(get_token_service),
@@ -51,20 +48,8 @@ async def auth(
     response_model=UserResponce,
 )
 async def info(
-    token: str = Depends(get_access_token),
-    token_service: "TokenService" = Depends(get_token_service),
-    user_db: "UserService" = Depends(get_user_service),
+    user: "User" = Depends(requied_roles([Roles.WORKER, Roles.SEO, Roles.OWNER])),
 ):
-    user = await authorize_user(
-        token=token,
-        type=Tokens.ACCESS,
-        token_service=token_service,
-        user_service=user_db,
-        role=Roles.WORKER,
-    )
-
-    if not user:
-        ExceptionRaiser.raise_exception(status_code=404)
     return UserResponce.model_validate(user)
 
 
@@ -74,19 +59,9 @@ async def info(
     response_model_exclude_unset=True,
 )
 async def get_new_access(
-    token: str = Depends(get_refresh_token),
+    user: "User" = Depends(user_from_refresh_token),
     token_service: "TokenService" = Depends(get_token_service),
-    user_db: "UserService" = Depends(get_user_service),
 ):
-    user = await authorize_user(
-        token=token,
-        type=Tokens.REFRESH,
-        token_service=token_service,
-        user_service=user_db,
-        role=Roles.WORKER,
-    )
-    if not user:
-        ExceptionRaiser.raise_exception(status_code=404)
 
     user_data = {
         "id": user.id,
@@ -97,3 +72,13 @@ async def get_new_access(
     access_token = token_service.generate_access_token(data=user_data)
 
     return TokenShema(access_token=access_token)
+
+
+@router.get(
+    "/asds",
+)
+async def info(
+    user: "User" = Depends(requied_roles([Roles.WORKER])),
+):
+    print(user)
+    return {"S": "SSS"}

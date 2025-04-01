@@ -1,32 +1,17 @@
 from typing import TYPE_CHECKING
+from fastapi import Depends
 from app.shared import ExceptionRaiser
+from .auth_dependencies import user_from_access_token
+from app.shared import Roles
 
 if TYPE_CHECKING:
-    from app.user import UserService, User
-    from app.token import Tokens, TokenService
-    from app.shared import Roles
+    from app.user import User
 
 
-async def authorize_user(
-    token: str,
-    type: "Tokens",
-    token_service: "TokenService",
-    user_service: "UserService",
-    role: "Roles",
-) -> "User":
+def requied_roles(allowed_roles: list[Roles]) -> "User":
+    def get_user(user: "User" = Depends(user_from_access_token)):
+        if user.role not in allowed_roles:
+            ExceptionRaiser.raise_exception(status_code=404)
+        return user
 
-    user_payload = token_service.decode(
-        token=token,
-        type=type,
-    )
-
-    user_id = user_payload.get("id")
-
-    user = await user_service.get(id=user_id)
-
-    if user.role != role:
-        ExceptionRaiser.raise_exception(
-            status_code=403, detail="You dont have permissions"
-        )
-
-    return user
+    return get_user
