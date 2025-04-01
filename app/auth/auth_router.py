@@ -53,7 +53,7 @@ async def info(
     return UserResponce.model_validate(user)
 
 
-@router.post(
+@router.get(
     "/refresh",
     response_model=TokenShema,
     response_model_exclude_unset=True,
