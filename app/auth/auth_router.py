@@ -30,7 +30,7 @@ async def auth(
 
     user_data: dict = {
         "id": user.id,
-        "username": user.username,
+        "username": user.obj_name,
         "email": user.email,
     }
 
@@ -72,13 +72,3 @@ async def get_new_access(
     access_token = token_service.generate_access_token(data=user_data)
 
     return TokenShema(access_token=access_token)
-
-
-@router.get(
-    "/asds",
-)
-async def info(
-    user: "User" = Depends(requied_roles([Roles.WORKER])),
-):
-    print(user)
-    return {"S": "SSS"}
